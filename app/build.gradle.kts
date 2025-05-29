@@ -40,9 +40,7 @@ android {
     buildFeatures {
         compose = true
     }
-
 }
-
 
 dependencies {
     //navigation
@@ -53,27 +51,25 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.junit.ktx)
     implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.benchmark.macro)
     annotationProcessor(libs.room.compiler)
     ksp(libs.room.compiler)
-
 
     implementation(libs.androidx.foundation)
 
     //optional
     implementation(libs.androidx.room.ktx)
     implementation(libs.material3)
-    implementation (libs.androidx.material.v140)
-    implementation(libs.material) // Usa la última versión
-
-
+    implementation(libs.androidx.material)
+    implementation(libs.androidx.material.v131)
 
     //Hilt
-    implementation(libs.dagger.hilt.android)
+    implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
     //Retrofit
-    implementation(libs.retrofit2.retrofit)
+    implementation(libs.retrofit)
     implementation(libs.moshi.kotlin)
     implementation(libs.converter.moshi)
     implementation(libs.logging.interceptor)
@@ -93,5 +89,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
 }
