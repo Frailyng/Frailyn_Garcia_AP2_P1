@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -18,6 +19,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -29,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -62,7 +65,11 @@ fun TareaBodyScreen(
     uiState: TareaUiState,
     onEvent: (TareaEvent) -> Unit,
     goBack: () -> Unit
-){
+) {
+    val descripcionError = uiState.descripcion.isNullOrBlank()
+    val tiempoError = uiState.tiempo <= 0
+    val isFormValid = !descripcionError && !tiempoError
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -92,7 +99,6 @@ fun TareaBodyScreen(
                     Spacer(modifier = Modifier.height(32.dp))
                     Text("Registro de tareas")
 
-
                     OutlinedTextField(
                         value = uiState.tareaId?.toString() ?: "Nuevo",
                         onValueChange = {},
@@ -103,27 +109,51 @@ fun TareaBodyScreen(
 
                     OutlinedTextField(
                         value = uiState.descripcion ?: "",
-                        onValueChange = { onEvent(TareaEvent.DescripcionChange(it))},
+                        onValueChange = { onEvent(TareaEvent.DescripcionChange(it)) },
                         label = { Text("Nombre de la tarea") },
                         modifier = Modifier.fillMaxWidth(),
+                        isError = descripcionError,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Blue,
                             unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = Color.Blue
+                            focusedLabelColor = Color.Blue,
+                            errorBorderColor = Color.Red
                         )
                     )
+                    if (descripcionError) {
+                        Text(
+                            text = "La descripción no puede estar vacía",
+                            color = Color.Red,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                        )
+                    }
 
                     OutlinedTextField(
                         value = uiState.tiempo.toString(),
-                        onValueChange = { onEvent(TareaEvent.TiempoChange(it.toInt()))},
+                        onValueChange = { input ->
+                            val tiempo = input.toIntOrNull() ?: 0
+                            onEvent(TareaEvent.TiempoChange(tiempo))
+                        },
                         label = { Text("Tiempo de la tarea") },
                         modifier = Modifier.fillMaxWidth(),
+                        isError = tiempoError,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Blue,
-                            unfocusedTextColor = Color.Gray,
-                            focusedLabelColor = Color.Blue
+                            unfocusedBorderColor = Color.Gray,
+                            focusedLabelColor = Color.Blue,
+                            errorBorderColor = Color.Red
                         )
                     )
+                    if (tiempoError) {
+                        Text(
+                            text = "El tiempo debe ser mayor a 0",
+                            color = Color.Red,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.padding(2.dp))
                     uiState.errorMessage?.let {
@@ -135,9 +165,7 @@ fun TareaBodyScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         OutlinedButton(
-                            onClick = {
-                                onEvent(TareaEvent.New)
-                            },
+                            onClick = { onEvent(TareaEvent.New) },
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = Color.Blue
                             ),
@@ -152,13 +180,17 @@ fun TareaBodyScreen(
                         }
                         OutlinedButton(
                             onClick = {
-                                onEvent(TareaEvent.Save)
-                                goBack()
+                                if (isFormValid) {
+                                    onEvent(TareaEvent.Save)
+                                    goBack()
+                                }
                             },
+                            enabled = isFormValid,
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = Color.Blue
+                                contentColor = if (isFormValid) Color.Blue else Color.Gray,
+                                disabledContentColor = Color.Gray
                             ),
-                            border = BorderStroke(1.dp, Color.Blue),
+                            border = BorderStroke(1.dp, if (isFormValid) Color.Blue else Color.Gray),
                             modifier = Modifier.padding(horizontal = 8.dp)
                         ) {
                             Icon(
